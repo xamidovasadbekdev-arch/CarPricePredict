@@ -1,0 +1,30 @@
+# Environment
+env/
+venv/
+.venv/
+
+# Data 
+data/raw/
+data/processed/
+
+# Models — binary files
+models/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# PyCharm
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env 
