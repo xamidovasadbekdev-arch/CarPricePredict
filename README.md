@@ -92,4 +92,4 @@ Key findings from EDA:
 ## Author
 
 **Asadbek** — Junior ML Engineer  
-[GitHub](https://github.com/xamidovasadbekdev-arch) • [LinkedIn](#)
+[GitHub](https://github.com/xamidovasadbekdev-arch) • [LinkedIn](https://www.linkedin.com/in/asadbekxamidov/)
