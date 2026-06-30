@@ -88,6 +88,115 @@ Key findings from EDA:
 - **`mileage` column name** standardized
 - **`name` and `year` columns dropped** after extraction
 
+### 4. Modelling
+
+**Preprocessing pipeline** built with `ColumnTransformer` to prevent data leakage — all transformers fit only on training data:
+
+- **Numerical features** (`km_driven`, `mileage`, `engine`, `max_power`, `seats`, `car_age`): `SimpleImputer(median)` → `StandardScaler`
+- **Categorical features** (`fuel`, `seller_type`, `transmission`, `brand`): `SimpleImputer(most_frequent)` → `OneHotEncoder`
+- **`owner`** (ordinal — has real order: First > Second > Third > Fourth): `SimpleImputer(most_frequent)` → `OrdinalEncoder`
+- **Target transform:** `selling_price` was right-skewed (skewness = 5.57), so `np.log1p()` applied to target before training, reversed with `np.expm1()` at prediction time — skewness after transform dropped to -0.15
+
+**Train/test split:** 80/20
+
+**Models compared:**
+
+| Model | R² | MAE | RMSE |
+|---|---|---|---|
+| Linear Regression | 0.8671 | ₹91,413 | ₹170,752 |
+| **Random Forest** | **0.9245** | **₹73,340** | **₹128,706** |
+| XGBoost | 0.9201 | ₹72,095 | ₹132,338 |
+
+**Random Forest selected as final model** — best overall balance of R² and RMSE.
+
+**Final model performance (on test set, real ₹ scale):**
+
+| Metric | Score |
+|---|---|
+| R² | 0.9245 |
+| MAE | ₹73,340 |
+| RMSE | ₹128,706 |
+
+### 5. Deployment
+
+- Model saved as a complete sklearn Pipeline (preprocessing + model together) using `joblib` — ensures raw, unprocessed input can be fed directly to the API without manual scaling/encoding
+- Wrapped in a **FastAPI** REST API
+- Containerized with **Docker**
+- Deployed on **Render**
+
+---
+
+## Tech Stack
+
+- **Python** — Pandas, NumPy, Scikit-learn
+- **Visualization** — Matplotlib, Seaborn
+- **API** — FastAPI, Pydantic
+- **Deployment** — Docker, Render
+
+---
+
+## How to Run Locally
+
+```bash
+# Clone the repo
+git clone https://github.com/xamidovasadbekdev-arch/CarPricePredict.git
+cd CarPricePredict
+
+# Create environment
+conda create --prefix ./env python=3.11
+conda activate ./env
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Download dataset from Kaggle and place at:
+# data/raw/cardekho.csv
+
+# Run notebooks in order:
+# 01_EDA.ipynb → 02_FeatureEngineering.ipynb → 03_Modelling.ipynb
+```
+
+---
+
+## API Usage
+
+```bash
+POST /predict
+Content-Type: application/json
+
+{
+  "km_driven": 45000,
+  "fuel": "Petrol",
+  "seller_type": "Individual",
+  "transmission": "Manual",
+  "owner": "First Owner",
+  "mileage": 18.5,
+  "engine": 1197.0,
+  "max_power": 82.0,
+  "seats": 5.0,
+  "brand": "Maruti",
+  "car_age": 5
+}
+```
+
+Response:
+```json
+{
+  "predicted_price": 517823
+}
+```
+
+---
+
+## Key Takeaways
+
+- Built a fully leak-free pipeline — all preprocessing (imputation, scaling, encoding) fit exclusively on training data
+- Compared three regression algorithms and selected the best based on test set performance, not just training accuracy
+- Validated stability with cross-validation before trusting the final metrics
+- Learned to reverse a target transformation (log1p/expm1) correctly when evaluating in real-world units
+- Made a data-driven decision to reject hyperparameter tuning results when they degraded test performance, rather than blindly trusting CV scores
+
+---
 
 ## Author
 
