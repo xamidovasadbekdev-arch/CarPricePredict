@@ -7,9 +7,6 @@ venv/
 data/raw/
 data/processed/
 
-# Models — binary files
-models/
-
 # Jupyter
 .ipynb_checkpoints/
 
